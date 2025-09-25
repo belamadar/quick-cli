@@ -1,107 +1,15 @@
-#!/usr/bin/env bash
-set -e
 
-# Colors
-GREEN="\033[0;32m"
-NC="\033[0m"
-
-msg() {
-  echo -e "${GREEN}>>> $1${NC}"
-}
-
-msg "Checking for Homebrew..."
-if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-elif [ -x /opt/homebrew/bin/brew ]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-else
-  msg "Homebrew not found. Installing Homebrew..."
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  # After install, add brew to PATH for this session
-  if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-  elif [ -x /opt/homebrew/bin/brew ]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-  else
-    echo "Homebrew installation failed or brew not found in expected locations. Exiting."
-    exit 1
-  fi
-fi
-
-msg "Checking for ZShell..."
-if which zsh >/dev/null 2>&1; then
-	msg "ZShell is available"
-else
-	msg "ZShell is not available"
-	brew install zsh
-fi	
-
-msg "Installing terminal tools..."
-brew install \
-  zsh-autosuggestions zsh-syntax-highlighting zsh-completions \
-  zoxide \
-  starship \
-  bat \
-  eza \
-  fzf \
-  ripgrep \
-  neovim \
-  tealdeer \
-  fastfetch
-
-msg "Installing Nerd Font..."
-if [ ! -f ~/.local/share/fonts/CaskaydiaCoveNerdFont-Regular.ttf ]; then
-  brew install --cask font-caskaydia-cove-nerd-font
-else
-  echo "Nerd Font already installed, skipping."
-fi
-
-msg "Setting up zsh config..."
-
-# Backup existing zshrc if present
-if [ -f ~/.zshrc ]; then
-  cp ~/.zshrc ~/.zshrc.backup.$(date +%s)
-  msg "Backed up existing .zshrc"
-fi
-
-cat > ~/.zshrc <<'EOF'
-## ---- Quick CLI - zsh preset ----
-
-# Homebrew path
-if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-elif [ -x /opt/homebrew/bin/brew ]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
-
-# History
-HISTFILE=~/.zsh_history
-HISTSIZE=5000
-SAVEHIST=5000
-
-# Aliases
-alias ls="eza --icons --group-directories-first"
-alias cat="bat"
-alias vi="nvim"
-
-# Plugins
-source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-fpath+=("$(brew --prefix)/share/zsh-completions")
 autoload -Uz compinit && compinit
 
-# Tools
-eval "$(zoxide init zsh --cmd cd)"
-eval "$(fzf --zsh)"
-
-# Prompt
-eval "$(starship init zsh)"
-
-EOF
-
-
-msg "Applying Starship preset..."
-starship preset gruvbox-rainbow -o ~/.config/starship.toml
-
-msg "Done! Restart your terminal to enjoy zsh + starship."
+# Main install dispatcher
+set -e
+OS="$(uname)"
+if [ "$OS" = "Darwin" ]; then
+  ./install_mac.sh
+elif [ "$OS" = "Linux" ]; then
+  ./install_linux.sh
+else
+  echo "Unsupported OS: $OS"
+  exit 1
+fi
 
