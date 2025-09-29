@@ -92,6 +92,6 @@ eval "$(starship init zsh)"
 EOF
 
 msg "Applying Starship preset..."
-starship preset gruvbox-rainbow -o ~/.config/starship.toml
+starship preset nerd-font-symbols -o ~/.config/starship.toml
 
 msg "Done! Restart your terminal to enjoy zsh + starship."
