@@ -1,14 +1,14 @@
-#!/usr/bin/env bash
+#!/bin/sh
 set -e
-echo ">>> Running Linux install script..."
+printf ">>> Running Linux install script...\n"
+
+msg() {
+  printf "%s>>> %s%s\n" "$GREEN" "$1" "$NC"
+}
 
 # Colors
 GREEN="\033[0;32m"
 NC="\033[0m"
-
-msg() {
-	echo -e "${GREEN}>>> $1${NC}"
-}
 
 msg "Checking for Homebrew..."
 if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
@@ -24,12 +24,11 @@ else
 	fi
 fi
 
-msg "Checking for ZShell..."
-if which zsh >/dev/null 2>&1; then
-	msg "ZShell is available"
+if command -v zsh >/dev/null 2>&1; then
+  msg "Z Shell is available"
 else
-	msg "ZShell is not available"
-	brew install zsh
+  msg "Installing Z Shell..."
+  brew install zsh
 fi
 
 msg "Installing terminal tools..."
